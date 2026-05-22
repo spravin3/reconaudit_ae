@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autonomous Loop — Visual Explainer</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: #f0f2f5; color: #1a1a2e; font-size: 15px; line-height: 1.5; }
+
+/* ── Banner ─────────────────────────────────────────────────── */
+.banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white; padding: 22px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.banner-title { font-size: 1.35em; font-weight: 700; letter-spacing: -0.3px; }
+.banner-sub { font-size: 0.83em; opacity: 0.55; margin-top: 5px; }
+.badge {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px; padding: 5px 14px; font-size: 0.78em; letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.container { max-width: 1160px; margin: 0 auto; padding: 32px 24px; }
+
+.card {
+  background: white; border-radius: 14px; padding: 32px 36px;
+  margin-bottom: 28px; box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+.card-title {
+  font-size: 1.1em; font-weight: 700; color: #1a1a2e;
+  margin-bottom: 4px; display: flex; align-items: center; gap: 10px;
+}
+.card-label {
+  background: #1a1a2e; color: white; font-size: 0.68em;
+  padding: 3px 9px; border-radius: 4px; letter-spacing: 1.2px; text-transform: uppercase;
+}
+.card-sub { font-size: 0.87em; color: #6b7280; margin-bottom: 28px; line-height: 1.6; }
+
+/* ── Phase Flow ─────────────────────────────────────────────── */
+.phases {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 0; margin-bottom: 32px; align-items: stretch;
+}
+.phase { display: flex; align-items: center; gap: 0; }
+.phase-box {
+  flex: 1; padding: 18px 14px; border-radius: 10px; text-align: center;
+  border: 2px solid #e5e7eb; background: #f9fafb;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+.phase-box.lit {
+  border-color: #3b82f6; background: #eff6ff;
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.14);
+}
+.phase-arrow {
+  font-size: 1.3em; color: #d1d5db; padding: 0 6px; flex-shrink: 0;
+  margin-top: -4px;
+}
+.phase-icon { font-size: 1.9em; margin-bottom: 6px; }
+.phase-name {
+  font-size: 0.73em; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; color: #374151;
+}
+.phase-desc { font-size: 0.72em; color: #9ca3af; margin-top: 5px; line-height: 1.35; }
+
+.output-branches { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.ob {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 8px; border-radius: 6px;
+  font-size: 0.7em; font-weight: 700;
+}
+.ob-green { background: #d1fae5; color: #065f46; }
+.ob-red   { background: #fee2e2; color: #991b1b; }
+.ob-amber { background: #fef9c3; color: #854d0e; }
+
+/* ── Walkthrough ────────────────────────────────────────────── */
+.walkthrough {
+  background: #0f172a; border-radius: 12px; padding: 28px 32px; color: white;
+}
+.wt-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.wt-eyebrow {
+  font-size: 0.73em; text-transform: uppercase; letter-spacing: 2px;
+  opacity: 0.4; margin-bottom: 4px;
+}
+.wt-title { font-size: 1em; font-weight: 700; color: #93c5fd; }
+
+.step-dots { display: flex; gap: 6px; }
+.step-dot {
+  width: 32px; height: 5px; border-radius: 3px;
+  background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.2s;
+}
+.step-dot.active { background: #60a5fa; }
+
+.step-area { min-height: 180px; }
+.step-panel { display: none; animation: fadeIn 0.2s ease; }
+.step-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.step-meta {
+  font-size: 0.72em; text-transform: uppercase; letter-spacing: 1.5px;
+  color: #60a5fa; margin-bottom: 8px;
+}
+.step-heading { font-size: 1.1em; font-weight: 700; margin-bottom: 10px; }
+.step-body { font-size: 0.87em; color: rgba(255,255,255,0.65); line-height: 1.65; }
+
+.code-block {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px; padding: 13px 18px; font-family: 'Menlo','Consolas',monospace;
+  font-size: 0.82em; color: #7dd3fc; margin: 12px 0; line-height: 1.6; white-space: pre;
+}
+.code-ok  { color: #86efac; }
+.code-dim { color: rgba(255,255,255,0.25); }
+
+.result-table {
+  background: rgba(255,255,255,0.05); border-radius: 8px;
+  overflow: hidden; margin: 12px 0; font-family: monospace; font-size: 0.85em;
+}
+.result-head { padding: 8px 18px; background: rgba(255,255,255,0.07); color: #a5f3fc; }
+.result-body { padding: 10px 18px; }
+.result-body .val { color: #86efac; font-size: 1.2em; font-weight: 700; }
+
+.verdict-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px; font-size: 0.88em; font-weight: 700; margin-top: 10px;
+}
+.vb-red   { background: rgba(239,68,68,0.18); color: #fca5a5; border: 1px solid rgba(239,68,68,0.28); }
+.vb-green { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+
+.gate-pass {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 8px; padding: 10px 16px; font-size: 0.85em; margin: 12px 0;
+}
+.gate-pass span { color: #86efac; font-weight: 600; }
+
+.wt-nav {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
+}
+.btn {
+  padding: 8px 22px; border-radius: 8px; border: none;
+  font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-ghost { background: rgba(255,255,255,0.1); color: white; }
+.btn-ghost:hover { background: rgba(255,255,255,0.18); }
+.btn-blue  { background: #3b82f6; color: white; }
+.btn-blue:hover { background: #2563eb; }
+.btn:disabled { opacity: 0.28; cursor: not-allowed; pointer-events: none; }
+
+/* ── Memo Diff ──────────────────────────────────────────────── */
+.diff-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.diff-header-bar {
+  padding: 13px 18px; border-radius: 10px; margin-bottom: 14px;
+  font-weight: 700; font-size: 0.88em;
+}
+.dhb-grey  { background: #f3f4f6; border: 2px solid #d1d5db; color: #374151; }
+.dhb-green { background: #ecfdf5; border: 2px solid #34d399; color: #065f46; }
+.diff-header-meta { font-size: 0.78em; font-weight: 400; opacity: 0.65; margin-top: 3px; }
+
+.finding {
+  border-radius: 10px; padding: 16px 18px;
+  border: 1.5px solid transparent; margin-bottom: 12px;
+}
+.finding-confirmed { background: #f0fdf4; border-color: #86efac; }
+.finding-warning   { background: #fffbeb; border-color: #fcd34d; }
+.finding-info      { background: #eff6ff; border-color: #93c5fd; }
+.finding-retracted { background: #fef2f2; border-color: #fca5a5; opacity: 0.7; }
+.finding-empty {
+  background: #f9fafb; border: 1.5px dashed #d1d5db;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 88px; border-radius: 10px; margin-bottom: 12px;
+}
+.finding-empty-text { font-size: 0.81em; color: #9ca3af; text-align: center; line-height: 1.5; }
+
+.finding-eyebrow {
+  font-size: 0.73em; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 5px;
+}
+.ey-green  { color: #15803d; }
+.ey-amber  { color: #92400e; }
+.ey-blue   { color: #1d4ed8; }
+.ey-red    { color: #dc2626; }
+.ey-grey   { color: #6b7280; }
+
+.finding-amount { font-size: 1.25em; font-weight: 700; margin-bottom: 5px; }
+.finding-body   { font-size: 0.82em; color: #4b5563; line-height: 1.55; }
+.strikethrough  { text-decoration: line-through; opacity: 0.45; }
+
+.retraction-box {
+  background: rgba(220,38,38,0.07); border-radius: 7px;
+  padding: 9px 12px; margin-top: 10px;
+  font-size: 0.79em; color: #b91c1c; line-height: 1.5;
+}
+.retraction-box .sql-snippet {
+  font-family: monospace; background: rgba(220,38,38,0.08);
+  padding: 3px 7px; border-radius: 4px; margin: 4px 0; display: inline-block;
+  font-size: 0.92em;
+}
+
+.diff-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 4px; }
+.diff-total {
+  padding: 14px 18px; border-radius: 10px; font-size: 0.87em;
+}
+.dt-grey  { background: #f3f4f6; border: 1.5px solid #d1d5db; color: #374151; }
+.dt-green { background: #ecfdf5; border: 1.5px solid #34d399; color: #065f46; }
+.dt-amount { font-size: 1.3em; font-weight: 700; display: block; margin-bottom: 3px; }
+.dt-note   { font-size: 0.79em; opacity: 0.7; font-weight: 400; }
+
+.connector {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75em; color: #9ca3af; gap: 6px; padding: 6px 0;
+  grid-column: 1 / -1; text-align: center;
+}
+
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div>
+    <div class="banner-title">Autonomous Audit Loop — How It Works</div>
+    <div class="banner-sub">Idea B: Verification loop state machine &nbsp;·&nbsp; Idea D: What survived the check</div>
+  </div>
+  <div class="badge">Reconaudit · AE</div>
+</div>
+
+<div class="container">
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!--  IDEA B: THE VERIFICATION LOOP                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">
+      <span class="card-label">Idea B</span>
+      The Verification Loop
+    </div>
+    <div class="card-sub">
+      Turn 1: the LLM generates hypotheses and writes its own verification SQL for each one.
+      Turns 2–N: every SQL runs against DuckDB before the LLM is allowed to issue a verdict.
+      The final memo contains only what passed.
+    </div>
+
+    <!-- Phase flow diagram -->
+    <div class="phases">
+      <div class="phase">
+        <div class="phase-box" id="ph0">
+          <div class="phase-icon">🧠</div>
+          <div class="phase-name">Turn 1</div>
+          <div class="phase-desc">LLM sees reconciliation data, generates up to 5 findings — each with a <em>verification_sql</em> it wrote itself</div>
+        </div>
+        <div class="phase-arrow">→</div>
+      </div>
+      <div class="phase">
+        <div class="phase-box" id="ph1">
+          <div class="phase-icon">🔒</div>
+          <div class="phase-name">SQL Gate</div>
+          <div class="phase-desc">Regex check before any DB connection. SELECT passes. DROP / DELETE / INSERT → rejected, finding marked <em>unverified</em></div>
+        </div>
+        <div class="phase-arrow">→</div>
+      </div>
+      <div class="phase">
+        <div class="phase-box" id="ph2">
+          <div class="phase-icon">🦆</div>
+          <div class="phase-name">DuckDB</div>
+          <div class="phase-desc">Read-only connection. Query executes against mart tables. Result capped at 20 rows, returned as columns + rows</div>
+        </div>
+        <div class="phase-arrow">→</div>
+      </div>
+      <div class="phase">
+        <div class="phase-box" id="ph3">
+          <div class="phase-icon">🔍</div>
+          <div class="phase-name">Turn 2–N</div>
+          <div class="phase-desc">LLM receives the actual query result in the same conversation thread. Responds with structured verdict JSON</div>
+        </div>
+        <div class="phase-arrow">→</div>
+      </div>
+      <div class="phase">
+        <div class="phase-box" id="ph4">
+          <div class="phase-icon">📋</div>
+          <div class="phase-name">Verdict</div>
+          <div class="phase-desc">
+            <div class="output-branches">
+              <div class="ob ob-green">✓ Confirmed → Memo</div>
+              <div class="ob ob-red">✗ Retracted → Dropped</div>
+              <div class="ob ob-amber">~ Revised → Adjusted</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Walkthrough -->
+    <div class="walkthrough">
+      <div class="wt-header">
+        <div>
+          <div class="wt-eyebrow">Live walkthrough</div>
+          <div class="wt-title">Causality Retraction · Scenario S3a from test suite</div>
+        </div>
+        <div class="step-dots" id="stepDots"></div>
+      </div>
+
+      <div class="step-area" id="stepArea"></div>
+
+      <div class="wt-nav">
+        <button class="btn btn-ghost" id="btnPrev" onclick="go(-1)">← Back</button>
+        <button class="btn btn-blue"  id="btnNext" onclick="go(+1)">Next →</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!--  IDEA D: MEMO DIFF                                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">
+      <span class="card-label">Idea D</span>
+      Single-Turn vs. Loop — What Survived Verification
+    </div>
+    <div class="card-sub">
+      The loop memo is shorter. That is not a failure — it is the loop working.
+      Every finding it surfaces has a SELECT statement behind it. The CFO can trust what
+      the loop says precisely because it will not say anything it has not checked.
+    </div>
+
+    <div class="diff-cols">
+
+      <!-- LEFT: single-turn -->
+      <div>
+        <div class="diff-header-bar dhb-grey">
+          Single-Turn Agent
+          <div class="diff-header-meta">One LLM call · all categories asserted · no verification step</div>
+        </div>
+
+        <div class="finding finding-confirmed">
+          <div class="finding-eyebrow ey-green">✅ Confirmed Revenue</div>
+          <div class="finding-amount" style="color:#15803d">$236,771.48</div>
+          <div class="finding-body">Server completed + client purchase_intent matched. 703 transactions across 3 days. Zero delta. Both systems agree.</div>
+        </div>
+
+        <div class="finding finding-info">
+          <div class="finding-eyebrow ey-blue">🔵 Unattributed Server Transactions</div>
+          <div class="finding-amount" style="color:#1d4ed8">$56,768.99</div>
+          <div class="finding-body">176 completed server transactions with no client event. Real settled revenue the dashboard never saw. Full 3-day total asserted.</div>
+        </div>
+
+        <div class="finding finding-warning">
+          <div class="finding-eyebrow ey-amber">⚠️ Intent → Failed (Overcount)</div>
+          <div class="finding-amount" style="color:#92400e">$39,162.34</div>
+          <div class="finding-body">93 transactions where client fired purchase_intent but server returned failed. Dashboard counted this as revenue. It never cleared.</div>
+        </div>
+
+        <div class="finding finding-retracted">
+          <div class="finding-eyebrow ey-red">⟳ Causality Ordering — Possible Violation</div>
+          <div class="finding-amount strikethrough" style="color:#dc2626">Hypothesised · $0 estimated</div>
+          <div class="finding-body">Possible cases where server timestamp precedes client event — would indicate a system clock anomaly. Asserted without a check against the data.</div>
+          <div class="retraction-box">
+            <strong>✗ Retracted by loop after SQL verification</strong><br>
+            <span class="sql-snippet">SELECT COUNT(*) WHERE server_after_client = false → 0 rows</span><br>
+            "Zero causality violations found. All server timestamps follow client."
+            This line does not appear in the loop memo.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: loop -->
+      <div>
+        <div class="diff-header-bar dhb-green">
+          Autonomous Loop
+          <div class="diff-header-meta">Multi-turn · every finding SQL-verified before surfacing</div>
+        </div>
+
+        <div class="finding finding-confirmed">
+          <div class="finding-eyebrow ey-green">✅ Confirmed Revenue — verified</div>
+          <div class="finding-amount" style="color:#15803d">$236,771.48</div>
+          <div class="finding-body">SQL confirmed perfect match across all three days. This is the source of truth for financial reporting. Both systems are reliable for this category.</div>
+        </div>
+
+        <div class="finding finding-info">
+          <div class="finding-eyebrow ey-blue">🔵 Unattributed — March 1 specifically</div>
+          <div class="finding-amount" style="color:#1d4ed8">$14,017.42</div>
+          <div class="finding-body">Loop confirmed 46 unattributed completions on March 1st — disproportionately large relative to that day's total. Suggests a specific instrumentation failure on that date. SQL verified.</div>
+        </div>
+
+        <div class="finding-empty">
+          <div class="finding-empty-text">
+            Intent → Failed <strong>not surfaced</strong><br>
+            <span style="font-size:0.88em">Loop required SQL confirmation<br>before asserting the full $39K figure</span>
+          </div>
+        </div>
+
+        <div class="finding-empty">
+          <div class="finding-empty-text">
+            Causality hypothesis <strong>retracted</strong><br>
+            <span style="font-size:0.88em">SQL returned 0 violations<br>Excluded from this memo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diff-footer">
+      <div class="diff-total dt-grey">
+        <span class="dt-amount">4 findings · $331,931 total asserted</span>
+        <span class="dt-note">Including one that SQL disproves. The reader cannot tell which findings were verified against the actual data.</span>
+      </div>
+      <div class="diff-total dt-green">
+        <span class="dt-amount">2 confirmed · 1 retracted · $250,789 total</span>
+        <span class="dt-note">Shorter memo — by design. Every sentence in it has a query result behind it. The agent will not tell a CFO something it has not checked.</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+
+<script>
+// ─── Step definitions ─────────────────────────────────────────────────────────
+const STEPS = [
+  {
+    phase: 0,
+    meta: "Step 1 of 6  ·  Turn 1 — Hypothesis",
+    heading: "LLM generates a finding with its own verification SQL",
+    body: `Turn 1: the LLM receives <code>fct_revenue_summary</code> and top anomalous transactions.
+It notices <code>server_after_client</code> is a column in the schema and hypothesises a possible
+causality violation — server timestamps preceding client events. Critically, it must write
+the SQL to check this itself before the loop will accept the finding.`,
+    extra: `<div class="code-block"><span class="code-dim">// Finding F2 in Turn 1 JSON output</span>
+{
+  "id": "F2",
+  "title": "Possible server-before-client causality violations",
+  "category": "causality_violation",
+  "confidence": "medium",
+  "estimated_impact_usd": 0.00,
+  "verification_sql": "SELECT COUNT(*) AS causality_violations
+    FROM main.fct_reconciliation
+    WHERE server_after_client = false"
+}</div>`
+  },
+  {
+    phase: 1,
+    meta: "Step 2 of 6  ·  SQL Gate",
+    heading: "Safety gate: SELECT-only check before any DB connection opens",
+    body: `<code>_safe_execute()</code> applies a regex <em>before</em> the DuckDB connection is even
+opened: <code>re.match(r"(?i)^\\s*select\\b", sql)</code>. The query starts with SELECT — it passes.
+<code>DROP TABLE</code>, <code>DELETE</code>, <code>INSERT</code> are all blocked here and the finding
+is marked <em>unverified</em> without ever touching the database. The table is safe.`,
+    extra: `<div class="gate-pass"><span>✓</span> re.match(r"(?i)^\\s*select\\b", sql) → PASS</div>
+<div class="code-block"><span class="code-dim">conn = duckdb.connect(db_path, read_only=True)</span>
+<span class="code-ok">Opening connection...</span></div>`
+  },
+  {
+    phase: 2,
+    meta: "Step 3 of 6  ·  DuckDB",
+    heading: "Query executes against fct_reconciliation — 928 rows",
+    body: `DuckDB opens a read-only connection and executes the SELECT against the mart table.
+Results are capped at 20 rows and returned as a columns + rows dict. Here there is only
+one row — a COUNT aggregate. The result is unambiguous.`,
+    extra: `<div class="result-table">
+  <div class="result-head">causality_violations</div>
+  <div class="result-body"><span class="val">0</span></div>
+</div>
+<div class="step-body" style="margin-top:4px;font-size:0.8em;opacity:0.4">(1 row returned · connection closed)</div>`
+  },
+  {
+    phase: 3,
+    meta: "Step 4 of 6  ·  Turn 2 — LLM receives the result",
+    heading: "The actual query result is fed back into the conversation",
+    body: `The result is appended to the same <code>messages</code> thread.
+The LLM can now see exactly what the data says about its own hypothesis.
+It is asked to respond with a structured JSON verdict: <em>confirmed</em>, <em>retracted</em>,
+or <em>revised</em>, plus a final impact figure.`,
+    extra: `<div class="code-block">Finding F2: Possible server-before-client causality violations
+Your stated finding: Some server transactions may precede client events.
+Your estimated impact: $0.00
+
+I ran your verification SQL:
+SELECT COUNT(*) AS causality_violations
+  FROM main.fct_reconciliation
+  WHERE server_after_client = false
+
+Result (1 row returned):
+causality_violations
+--------------------
+0
+
+<span class="code-dim">Based on this data, respond with JSON only:
+{"id": "F2", "status": "confirmed|retracted|revised", ...}</span></div>`
+  },
+  {
+    phase: 3,
+    meta: "Step 5 of 6  ·  LLM Verdict",
+    heading: "LLM sees COUNT = 0 and retracts",
+    body: `The LLM receives the result showing zero violations. There is nothing to confirm.
+The hypothesis cannot be supported by the evidence it asked for. It self-retracts —
+not because a rule said so, but because the data it retrieved contradicts its claim.
+This is the autonomous reasoning the brief required.`,
+    extra: `<div class="code-block"><span class="code-ok">{
+  "id": "F2",
+  "status": "retracted",
+  "explanation": "Zero causality violations found. All server
+    timestamps follow their client event timestamps. Finding retracted.",
+  "final_impact_usd": 0.00
+}</span></div>
+<div class="verdict-badge vb-red">✗ RETRACTED — excluded from final memo</div>`
+  },
+  {
+    phase: 4,
+    meta: "Step 6 of 6  ·  Output",
+    heading: "Finding excluded. Memo built from confirmed findings only.",
+    body: `The retracted finding is recorded in the <code>verified</code> list but not passed to the
+final memo prompt. The loop continues with the remaining findings. When all findings are
+verified, the memo is written exclusively from <code>confirmed</code> entries.
+The shorter memo is not a failure — it is the guarantee.`,
+    extra: `<div class="code-block"><span class="code-dim">[Loop]   → RETRACTED     |        $0.00</span>
+
+confirmed = [f for f in verified if f.get("status") == "confirmed"]
+<span class="code-dim"># F2 is status="retracted" → not in confirmed → not in memo</span>
+
+messages.append({"role": "user",
+  "content": _build_memo_prompt(<span class="code-ok">confirmed</span>, verified)})</div>
+<div class="verdict-badge vb-red" style="margin-top:10px">✗ Not surfaced to decision-maker</div>`
+  }
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let current = 0;
+
+function render() {
+  const s = STEPS[current];
+
+  // Dots
+  document.getElementById('stepDots').innerHTML = STEPS.map((_, i) =>
+    `<div class="step-dot${i === current ? ' active' : ''}" onclick="goTo(${i})"></div>`
+  ).join('');
+
+  // Panel
+  document.getElementById('stepArea').innerHTML = `
+    <div class="step-panel active">
+      <div class="step-meta">${s.meta}</div>
+      <div class="step-heading">${s.heading}</div>
+      <div class="step-body">${s.body}</div>
+      ${s.extra}
+    </div>`;
+
+  // Phase highlight
+  document.querySelectorAll('.phase-box').forEach((el, i) => {
+    el.classList.toggle('lit', i === s.phase);
+  });
+
+  // Buttons
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').disabled = current === STEPS.length - 1;
+  document.getElementById('btnNext').textContent = current === STEPS.length - 1 ? 'Done' : 'Next →';
+}
+
+function go(delta) {
+  current = Math.max(0, Math.min(STEPS.length - 1, current + delta));
+  render();
+}
+function goTo(i) { current = i; render(); }
+
+render();
+</script>
+</body>
+</html>

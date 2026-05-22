@@ -28,7 +28,6 @@ REPO_ROOT   = Path(__file__).parent
 DB_PATH     = REPO_ROOT / os.getenv("DUCKDB_PATH", "reconaudit.duckdb")
 DBT_BIN     = REPO_ROOT / ".venv/bin/dbt"
 PYTEST_BIN  = REPO_ROOT / ".venv/bin/pytest"
-MEMO_PATH   = REPO_ROOT / "notes/executive_memo.md"
 REPORT_PATH = REPO_ROOT / "notes/report.html"
 
 
@@ -118,20 +117,6 @@ def collect_reconciliation() -> dict:
     return {"summary": summary, "top_anomalies": top_anomalies}
 
 
-def get_memo() -> str:
-    if MEMO_PATH.exists():
-        print("  Using cached executive memo.")
-        return MEMO_PATH.read_text()
-    print("  Running Gemini audit agent...")
-    from audit.agent import run_audit
-    try:
-        memo = run_audit()
-        MEMO_PATH.write_text(memo)
-        return memo
-    except Exception as exc:
-        return f"⚠️ Audit agent error: {exc}"
-
-
 # ── HTML generation ──────────────────────────────────────────────────────────
 
 STATUS_COLORS = {
@@ -166,7 +151,7 @@ def _pill(status: str, label: str) -> str:
 
 
 def generate_html(dlt: dict, py_rc: int, py_tests: list, dbt_rc: int, dbt_tests: list,
-                  recon: dict, memo: str, generated_at: str) -> str:
+                  recon: dict, generated_at: str) -> str:
 
     overall_ok = (py_rc == 0 and dbt_rc == 0)
     banner_color = "#28a745" if overall_ok else "#dc3545"
@@ -244,20 +229,6 @@ def generate_html(dlt: dict, py_rc: int, py_tests: list, dbt_rc: int, dbt_tests:
             f'</tr>'
         )
 
-    # — memo paragraphs
-    memo_html = ""
-    for para in memo.strip().split("\n\n"):
-        if para.startswith("#"):
-            level = len(para.split()[0])
-            text = para.lstrip("#").strip()
-            memo_html += f'<h{level} style="margin-top:1.2em">{text}</h{level}>'
-        elif para.startswith("**") or para.startswith("*"):
-            memo_html += f'<p style="margin:0.6em 0"><strong>{para.lstrip("*").rstrip("*")}</strong></p>'
-        else:
-            for line in para.split("\n"):
-                if line.strip():
-                    memo_html += f'<p style="margin:0.6em 0;line-height:1.7">{line}</p>'
-
     py_pass = sum(1 for t in py_tests if t["status"] == "PASSED")
     py_total = len(py_tests)
     dbt_pass = sum(1 for t in dbt_tests if t["status"] == "PASS")
@@ -322,7 +293,6 @@ def generate_html(dlt: dict, py_rc: int, py_tests: list, dbt_rc: int, dbt_tests:
     <a href="#extraction">① Extraction (DLT)</a>
     <a href="#tests">② Tests</a>
     <a href="#reconciliation">③ Reconciliation</a>
-    <a href="#memo">④ Executive Memo</a>
   </div>
 
   <!-- ① EXTRACTION ─────────────────────────────────────────────────── -->
@@ -425,11 +395,6 @@ def generate_html(dlt: dict, py_rc: int, py_tests: list, dbt_rc: int, dbt_tests:
     </table>
   </div>
 
-  <!-- ④ EXECUTIVE MEMO ────────────────────────────────────────────── -->
-  <div class="section" id="memo">
-    <h2>④ Executive Memo — Gemini Audit Agent</h2>
-    <div class="memo">{memo_html}</div>
-  </div>
 
 </div>
 </body>
@@ -456,9 +421,6 @@ def main():
     print("→ Querying reconciliation data...")
     recon = collect_reconciliation()
 
-    print("→ Fetching executive memo...")
-    memo = get_memo()
-
     print("→ Generating HTML report...")
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     html = generate_html(
@@ -466,7 +428,6 @@ def main():
         py_rc=py_rc, py_tests=py_tests,
         dbt_rc=dbt_rc, dbt_tests=dbt_tests,
         recon=recon,
-        memo=memo,
         generated_at=generated_at,
     )
 
