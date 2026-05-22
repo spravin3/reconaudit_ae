@@ -1,0 +1,11 @@
+traffic_source,channel_type,is_paid
+direct,direct,false
+google,search,true
+bing,search,true
+facebook,social,true
+twitter,social,true
+tiktok,social,true
+youtube,video,true
+email,email,false
+affiliate,affiliate,true
+referral,referral,false

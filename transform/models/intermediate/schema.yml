@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: int_events_enriched
+    description: >
+      Client events enriched with funnel metadata (stage, order) from dim_event_types
+      and channel classification (type, paid flag) from dim_traffic_sources.
+      Shared building block used by dim_users, dim_products, and fct_user_journey.
+
+  - name: int_user_transaction_summary
+    description: >
+      Per-user server transaction aggregates: counts by status, total revenue,
+      avg amount, and first/last transaction timestamps.
+      Shared building block used by dim_users and fct_user_journey.

@@ -1,0 +1,119 @@
+version: 2
+
+models:
+  - name: dim_users
+    description: >
+      One row per unique user across both client and server systems.
+      Aggregates lifetime event counts, transaction counts, revenue, and acquisition source.
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null
+      - name: has_client_activity
+        description: True if the user appears in the client event stream.
+      - name: has_server_activity
+        description: True if the user appears in the server transaction ledger.
+
+  - name: dim_products
+    description: >
+      One row per product_id seen in client events (add_to_cart or purchase_intent).
+      Aggregates cart counts, intent counts, and the cart-to-intent conversion rate.
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_dates
+    description: >
+      Date spine for the full analysis window derived from server transaction timestamps.
+      Provides day-of-week, month name, and is_weekend flag for time-based slicing.
+    columns:
+      - name: date_day
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_user_journey
+    description: >
+      User-day grain fact table. Captures the full funnel from page_view (awareness)
+      through add_to_cart (consideration), purchase_intent (conversion intent),
+      and server-side completion. had_* boolean flags enable funnel drop-off analysis.
+    columns:
+      - name: user_id
+        tests:
+          - not_null
+      - name: activity_date
+        tests:
+          - not_null
+      - name: had_page_view
+        description: True if user had at least one page_view on this date. Funnel entry point.
+      - name: had_add_to_cart
+        description: True if user added to cart on this date.
+      - name: had_purchase_intent
+        description: True if user fired purchase_intent on this date.
+      - name: had_conversion
+        description: True if at least one server transaction completed on this date.
+
+
+  - name: fct_reconciliation
+    description: >
+      One row per server transaction enriched with its matching client purchase_intent.
+      Left join on ext_id = event_id; client columns are null for the dark block.
+    columns:
+      - name: tx_id
+        description: Server transaction identifier. Unique in this model.
+        tests:
+          - unique
+          - not_null
+
+      - name: reconciliation_status
+        description: Classification of each transaction for audit purposes.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - confirmed_revenue
+                  - intent_but_failed
+                  - unattributed_server_tx
+                  - failed_unattributed
+
+      - name: amount_delta
+        description: >
+          server_amount minus client intent_value. Must be 0.00 for all
+          confirmed_revenue rows. Any non-zero value indicates a pricing anomaly.
+
+      - name: server_after_client
+        description: >
+          Boolean: true if server timestamp >= client timestamp.
+          Null for unattributed rows (no client event to compare).
+          Any false value is a causality violation and a critical data quality issue.
+
+  - name: fct_revenue_summary
+    description: >
+      Daily revenue aggregated by reconciliation_status, plus a TOTAL row per day.
+      Primary input for the executive memo and audit agent.
+    columns:
+      - name: report_date
+        description: UTC day (truncated from server tx_timestamp).
+        tests:
+          - not_null
+
+      - name: reconciliation_status
+        description: Aggregation category, including synthetic 'TOTAL' rows.
+        tests:
+          - not_null
+
+      - name: tx_count
+        description: Number of server transactions in this category on this date.
+
+      - name: server_revenue
+        description: Sum of server-confirmed amounts.
+
+      - name: client_declared_revenue
+        description: Sum of client purchase_intent values (may include failed intents).
+
+      - name: revenue_delta
+        description: server_revenue minus client_declared_revenue.

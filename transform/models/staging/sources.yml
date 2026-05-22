@@ -1,0 +1,50 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Raw tables loaded by the DLT pipeline from JSON source files.
+      DLT populates schema 'raw' with _dlt_load_id and _dlt_id metadata columns.
+    schema: raw
+    tables:
+      - name: client_events
+        description: >
+          Flattened client-side event stream. 5,509 raw records including 605
+          duplicate event_ids (all page_view). Primary key: event_id.
+        columns:
+          - name: event_id
+            description: Client-assigned event identifier. Format 'a<int>'.
+          - name: event_timestamp
+            description: UTC timestamp of the client-side event.
+          - name: user_id
+            description: Anonymous user identifier. Format 'u<int>'.
+          - name: event_name
+            description: "One of: page_view, add_to_cart, purchase_intent."
+          - name: url
+            description: Page URL for page_view events. Null for others.
+          - name: traffic_source
+            description: Acquisition channel for page_view events. Null for others.
+          - name: product_id
+            description: Product identifier for add_to_cart and purchase_intent events.
+          - name: intent_value
+            description: Declared purchase value (float). Present only on purchase_intent events.
+
+      - name: server_logs
+        description: >
+          Server-side transaction ledger. 928 records.
+          ext_id is null for the structural 'dark block' (tx_1703–tx_1927).
+        columns:
+          - name: tx_id
+            description: Server transaction ID. Format 'tx_<int>'. No duplicates.
+          - name: tx_timestamp
+            description: UTC timestamp of the server transaction attempt.
+          - name: user_id
+            description: User who initiated the transaction.
+          - name: status
+            description: "Transaction outcome: completed or failed."
+          - name: amount
+            description: Transaction amount in USD. Matches intent_value for linked records.
+          - name: ext_id
+            description: >
+              References client event_id. Null for 225 transactions in the dark block
+              (tx_1703–tx_1927) where client attribution was lost.

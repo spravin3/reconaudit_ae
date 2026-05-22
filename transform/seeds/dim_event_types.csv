@@ -1,0 +1,4 @@
+event_name,description,funnel_stage,funnel_order
+page_view,User viewed a product or page,awareness,1
+add_to_cart,User added a product to their shopping cart,consideration,2
+purchase_intent,User initiated checkout and payment,conversion,3

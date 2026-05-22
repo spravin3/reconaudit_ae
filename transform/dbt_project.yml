@@ -1,0 +1,31 @@
+name: 'reconaudit'
+version: '1.0.0'
+config-version: 2
+
+profile: 'reconaudit'
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  reconaudit:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  reconaudit:
+    dim_traffic_sources:
+      +column_types:
+        is_paid: boolean

@@ -1,0 +1,30 @@
+# Environment
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# DuckDB
+*.duckdb
+*.duckdb.wal
+
+# dbt
+transform/target/
+transform/dbt_packages/
+transform/logs/
+
+# DLT
+.dlt/
+pipeline_data/
+
+# uv
+.uv/
+
+# macOS
+.DS_Store
+
+# Local tooling
+.claude/
+.pytest_cache/
+logs/

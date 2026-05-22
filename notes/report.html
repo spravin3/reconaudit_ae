@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reconaudit Pipeline Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #f5f7fa; color: #1a1a2e; font-size: 15px; }
+  .banner { background: #28a745; color: white; padding: 18px 40px;
+             display: flex; align-items: center; justify-content: space-between; }
+  .banner h1 { font-size: 1.4em; font-weight: 700; }
+  .banner .sub { font-size: 0.85em; opacity: 0.9; margin-top: 2px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  .section { background: white; border-radius: 10px; padding: 24px 28px;
+              margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .section h2 { font-size: 1.1em; font-weight: 700; margin-bottom: 16px;
+                 padding-bottom: 10px; border-bottom: 2px solid #f0f0f0;
+                 color: #333; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+  th { background: #f8f9fa; padding: 9px 12px; text-align: left;
+        font-weight: 600; color: #555; border-bottom: 2px solid #dee2e6; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+  .cards { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .stat { display: inline-block; background: #f8f9fa; border-radius: 8px;
+           padding: 12px 16px; margin: 4px; text-align: center; }
+  .stat .num { font-size: 1.6em; font-weight: 700; color: #333; }
+  .stat .lbl { font-size: 0.78em; color: #666; margin-top: 2px; }
+  .tag-ok   { background:#d4edda; color:#155724; padding:2px 7px; border-radius:4px; font-size:0.8em; }
+  .tag-fail { background:#f8d7da; color:#721c24; padding:2px 7px; border-radius:4px; font-size:0.8em; }
+  .memo { line-height: 1.75; color: #2c2c2c; }
+  .memo p { margin-bottom: 0.8em; }
+  .toc a { color: #0066cc; text-decoration: none; margin-right: 16px; font-size: 0.9em; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div>
+    <div class="h1" style="font-size:1.5em;font-weight:700">✅ All Systems Green</div>
+    <div class="sub">Reconaudit Pipeline Report · Generated 2026-05-19 17:11:38</div>
+  </div>
+  <div style="font-size:0.9em;text-align:right">
+    <div>pytest: <strong>15/15</strong> passed</div>
+    <div>dbt tests: <strong>22/22</strong> passed</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div style="margin-bottom:24px" class="toc">
+    <a href="#extraction">① Extraction (DLT)</a>
+    <a href="#tests">② Tests</a>
+    <a href="#reconciliation">③ Reconciliation</a>
+    <a href="#memo">④ Executive Memo</a>
+  </div>
+
+  <!-- ① EXTRACTION ─────────────────────────────────────────────────── -->
+  <div class="section" id="extraction">
+    <h2>① Extraction Layer — DLT</h2>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+      <div class="stat"><div class="num">5,509</div><div class="lbl">source records<br>(client_events)</div></div>
+      <div class="stat"><div class="num" style="color:#28a745">4,904</div><div class="lbl">loaded unique<br>(after dedup)</div></div>
+      <div class="stat"><div class="num" style="color:#dc3545">605</div><div class="lbl">duplicates<br>removed</div></div>
+      <div class="stat"><div class="num">928</div><div class="lbl">source records<br>(server_logs)</div></div>
+      <div class="stat"><div class="num" style="color:#28a745">928</div><div class="lbl">loaded<br>(no dupes)</div></div>
+    </div>
+    <div class="two-col">
+      <table>
+        <thead><tr><th>Event Type</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>page_view</td><td>3,000</td></tr><tr><td>add_to_cart</td><td>1,201</td></tr><tr><td>purchase_intent</td><td>703</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <thead><tr><th>Status</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>completed</td><td>786</td></tr><tr><td>failed</td><td>142</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ② TESTS ─────────────────────────────────────────────────────── -->
+  <div class="section" id="tests">
+    <h2>② Test Suite</h2>
+    <div class="two-col">
+      <div>
+        <div style="margin-bottom:10px;font-weight:600">
+          pytest — 15/15 passed
+          <span class="tag-ok" style="margin-left:8px">
+            ALL PASS
+          </span>
+        </div>
+        <div style="font-size:0.8em;color:#888;margin-bottom:8px">
+          Covers: pagination simulation · deduplication · schema evolution
+        </div>
+        <table>
+          <thead><tr><th></th><th>Test</th></tr></thead>
+          <tbody><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_client_events_count_matches_source</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_client_events_no_records_dropped_at_page_boundary</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_server_logs_count_matches_source</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_server_logs_no_records_dropped_at_page_boundary</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_all_pages_covered</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_client_events_unique_after_load</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_server_logs_unique_after_load</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_client_events_deduped_count</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_purchase_intent_count_unchanged_by_dedup</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_new_property_field_ignored_gracefully</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_missing_value_field_returns_none</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_missing_properties_key_returns_all_none</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_null_meta_ext_id_returns_none</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_missing_meta_key_returns_none</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">test_evolved_source_written_to_temp_db</td></tr></tbody>
+        </table>
+      </div>
+      <div>
+        <div style="margin-bottom:10px;font-weight:600">
+          dbt tests — 22/22 passed
+          <span class="tag-ok" style="margin-left:8px">
+            ALL PASS
+          </span>
+        </div>
+        <div style="font-size:0.8em;color:#888;margin-bottom:8px">
+          Covers: unique · not_null · accepted_values · 3 custom singular tests
+        </div>
+        <table>
+          <thead><tr><th></th><th>Test</th></tr></thead>
+          <tbody><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">accepted_values_fct_reconciliation_reconciliation_status__confirmed_revenue__intent_but_failed__unattributed_server_tx__failed_unattributed</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">accepted_values_stg_client_events_event_name__page_view__add_to_cart__purchase_intent</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">accepted_values_stg_server_logs_status__completed__failed</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">assert_ext_ids_resolve</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">assert_no_amount_drift</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">assert_no_causality_violation</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_fct_reconciliation_reconciliation_status</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_fct_reconciliation_tx_id</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_fct_revenue_summary_reconciliation_status</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_fct_revenue_summary_report_date</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_client_events_event_id</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_client_events_event_name</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_client_events_event_timestamp</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_client_events_user_id</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_server_logs_amount</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_server_logs_status</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_server_logs_tx_id</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_server_logs_tx_timestamp</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">not_null_stg_server_logs_user_id</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">unique_fct_reconciliation_tx_id</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">unique_stg_client_events_event_id</td></tr><tr><td>✅</td><td style="font-family:monospace;font-size:0.82em">unique_stg_server_logs_tx_id</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ RECONCILIATION ────────────────────────────────────────────── -->
+  <div class="section" id="reconciliation">
+    <h2>③ Reconciliation Output</h2>
+    <div class="cards"><div style="background:#d4edda;color:#155724;padding:16px 20px;border-radius:8px;min-width:200px;flex:1"><div style="font-size:1.4em;font-weight:700">$236,771.48</div><div style="font-size:0.85em;margin-top:4px">✅ Confirmed Revenue</div><div style="font-size:0.8em;opacity:0.8">610 transactions</div></div><div style="background:#f8d7da;color:#721c24;padding:16px 20px;border-radius:8px;min-width:200px;flex:1"><div style="font-size:1.4em;font-weight:700">$14,929.74</div><div style="font-size:0.85em;margin-top:4px">❌ Failed (No Client Event)</div><div style="font-size:0.8em;opacity:0.8">49 transactions</div></div><div style="background:#fff3cd;color:#856404;padding:16px 20px;border-radius:8px;min-width:200px;flex:1"><div style="font-size:1.4em;font-weight:700">$39,162.34</div><div style="font-size:0.85em;margin-top:4px">⚠️  Intent → Failed</div><div style="font-size:0.8em;opacity:0.8">93 transactions</div></div><div style="background:#cce5ff;color:#004085;padding:16px 20px;border-radius:8px;min-width:200px;flex:1"><div style="font-size:1.4em;font-weight:700">$56,768.99</div><div style="font-size:0.85em;margin-top:4px">🔵 Unattributed Server Tx</div><div style="font-size:0.8em;opacity:0.8">176 transactions</div></div></div>
+
+    <h3 style="font-size:0.95em;font-weight:600;margin:20px 0 10px;color:#555">
+      Daily Breakdown by Reconciliation Status
+    </h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Status</th><th style="text-align:right">Tx</th>
+          <th style="text-align:right">Server $</th>
+          <th style="text-align:right">Client Intent $</th>
+          <th style="text-align:right">Delta</th>
+        </tr>
+      </thead>
+      <tbody><tr style="background:#e2e3e5;color:#383d41"><td>2024-03-01</td><td>📊 TOTAL</td><td style="text-align:right">174</td><td style="text-align:right">$62,375.64</td><td style="text-align:right">$44,350.35</td><td style="text-align:right;font-weight:600">+$18,025.29</td></tr><tr style="background:#d4edda;color:#155724"><td>2024-03-01</td><td>✅ Confirmed Revenue</td><td style="text-align:right">103</td><td style="text-align:right">$37,316.57</td><td style="text-align:right">$37,316.57</td><td style="text-align:right;font-weight:600">+$0.00</td></tr><tr style="background:#f8d7da;color:#721c24"><td>2024-03-01</td><td>❌ Failed (No Client Event)</td><td style="text-align:right">11</td><td style="text-align:right">$4,007.87</td><td style="text-align:right">$0.00</td><td style="text-align:right;font-weight:600">+$4,007.87</td></tr><tr style="background:#fff3cd;color:#856404"><td>2024-03-01</td><td>⚠️  Intent → Failed</td><td style="text-align:right">14</td><td style="text-align:right">$7,033.78</td><td style="text-align:right">$7,033.78</td><td style="text-align:right;font-weight:600">+$0.00</td></tr><tr style="background:#cce5ff;color:#004085"><td>2024-03-01</td><td>🔵 Unattributed Server Tx</td><td style="text-align:right">46</td><td style="text-align:right">$14,017.42</td><td style="text-align:right">$0.00</td><td style="text-align:right;font-weight:600">+$14,017.42</td></tr><tr style="background:#e2e3e5;color:#383d41"><td>2024-03-02</td><td>📊 TOTAL</td><td style="text-align:right">459</td><td style="text-align:right">$174,028.50</td><td style="text-align:right">$142,195.81</td><td style="text-align:right;font-weight:600">+$31,832.69</td></tr><tr style="background:#d4edda;color:#155724"><td>2024-03-02</td><td>✅ Confirmed Revenue</td><td style="text-align:right">313</td><td style="text-align:right">$122,911.14</td><td style="text-align:right">$122,911.14</td><td style="text-align:right;font-weight:600">+$0.00</td></tr><tr style="background:#f8d7da;color:#721c24"><td>2024-03-02</td><td>❌ Failed (No Client Event)</td><td style="text-align:right">26</td><td style="text-align:right">$7,353.35</td><td style="text-align:right">$0.00</td><td style="text-align:right;font-weight:600">+$7,353.35</td></tr><tr style="background:#fff3cd;color:#856404"><td>2024-03-02</td><td>⚠️  Intent → Failed</td><td style="text-align:right">48</td><td style="text-align:right">$19,284.67</td><td style="text-align:right">$19,284.67</td><td style="text-align:right;font-weight:600">+$0.00</td></tr><tr style="background:#cce5ff;color:#004085"><td>2024-03-02</td><td>🔵 Unattributed Server Tx</td><td style="text-align:right">72</td><td style="text-align:right">$24,479.34</td><td style="text-align:right">$0.00</td><td style="text-align:right;font-weight:600">+$24,479.34</td></tr><tr style="background:#e2e3e5;color:#383d41"><td>2024-03-03</td><td>📊 TOTAL</td><td style="text-align:right">295</td><td style="text-align:right">$111,228.41</td><td style="text-align:right">$89,387.66</td><td style="text-align:right;font-weight:600">+$21,840.75</td></tr><tr style="background:#d4edda;color:#155724"><td>2024-03-03</td><td>✅ Confirmed Revenue</td><td style="text-align:right">194</td><td style="text-align:right">$76,543.77</td><td style="text-align:right">$76,543.77</td><td style="text-align:right;font-weight:600">+$0.00</td></tr><tr style="background:#f8d7da;color:#721c24"><td>2024-03-03</td><td>❌ Failed (No Client Event)</td><td style="text-align:right">12</td><td style="text-align:right">$3,568.52</td><td style="text-align:right">$0.00</td><td style="text-align:right;font-weight:600">+$3,568.52</td></tr><tr style="background:#fff3cd;color:#856404"><td>2024-03-03</td><td>⚠️  Intent → Failed</td><td style="text-align:right">31</td><td style="text-align:right">$12,843.89</td><td style="text-align:right">$12,843.89</td><td style="text-align:right;font-weight:600">+$0.00</td></tr><tr style="background:#cce5ff;color:#004085"><td>2024-03-03</td><td>🔵 Unattributed Server Tx</td><td style="text-align:right">58</td><td style="text-align:right">$18,272.23</td><td style="text-align:right">$0.00</td><td style="text-align:right;font-weight:600">+$18,272.23</td></tr></tbody>
+    </table>
+
+    <h3 style="font-size:0.95em;font-weight:600;margin:24px 0 10px;color:#555">
+      Top Anomalous Transactions (by server amount)
+    </h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tx ID</th><th>Status</th>
+          <th style="text-align:right">Server $</th>
+          <th style="text-align:right">Client $</th>
+          <th style="text-align:right">Delta</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody><tr><td style="font-family:monospace">tx_1634</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$798.19</td><td style="text-align:right">$798.19</td><td style="text-align:right">$0.00</td><td>2024-03-01</td></tr><tr><td style="font-family:monospace">tx_1576</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$794.27</td><td style="text-align:right">$794.27</td><td style="text-align:right">$0.00</td><td>2024-03-02</td></tr><tr><td style="font-family:monospace">tx_1428</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$794.01</td><td style="text-align:right">$794.01</td><td style="text-align:right">$0.00</td><td>2024-03-02</td></tr><tr><td style="font-family:monospace">tx_1123</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$790.78</td><td style="text-align:right">$790.78</td><td style="text-align:right">$0.00</td><td>2024-03-01</td></tr><tr><td style="font-family:monospace">tx_1162</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$785.71</td><td style="text-align:right">$785.71</td><td style="text-align:right">$0.00</td><td>2024-03-02</td></tr><tr><td style="font-family:monospace">tx_1448</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$779.91</td><td style="text-align:right">$779.91</td><td style="text-align:right">$0.00</td><td>2024-03-01</td></tr><tr><td style="font-family:monospace">tx_1303</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$777.41</td><td style="text-align:right">$777.41</td><td style="text-align:right">$0.00</td><td>2024-03-02</td></tr><tr><td style="font-family:monospace">tx_1329</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$776.15</td><td style="text-align:right">$776.15</td><td style="text-align:right">$0.00</td><td>2024-03-02</td></tr><tr><td style="font-family:monospace">tx_1697</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$772.75</td><td style="text-align:right">$772.75</td><td style="text-align:right">$0.00</td><td>2024-03-03</td></tr><tr><td style="font-family:monospace">tx_1663</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$766.13</td><td style="text-align:right">$766.13</td><td style="text-align:right">$0.00</td><td>2024-03-03</td></tr><tr><td style="font-family:monospace">tx_1069</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$758.36</td><td style="text-align:right">$758.36</td><td style="text-align:right">$0.00</td><td>2024-03-02</td></tr><tr><td style="font-family:monospace">tx_1612</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$754.03</td><td style="text-align:right">$754.03</td><td style="text-align:right">$0.00</td><td>2024-03-03</td></tr><tr><td style="font-family:monospace">tx_1457</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$738.20</td><td style="text-align:right">$738.20</td><td style="text-align:right">$0.00</td><td>2024-03-01</td></tr><tr><td style="font-family:monospace">tx_1203</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$729.61</td><td style="text-align:right">$729.61</td><td style="text-align:right">$0.00</td><td>2024-03-03</td></tr><tr><td style="font-family:monospace">tx_1211</td><td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:0.8em;font-weight:600">⚠️  Intent → Failed</span></td><td style="text-align:right">$714.59</td><td style="text-align:right">$714.59</td><td style="text-align:right">$0.00</td><td>2024-03-02</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ④ EXECUTIVE MEMO ────────────────────────────────────────────── -->
+  <div class="section" id="memo">
+    <h2>④ Executive Memo — Gemini Audit Agent</h2>
+    <div class="memo"><h2 style="margin-top:1.2em">Executive Memo: Revenue Reconciliation Discrepancies - March 1-3, 2024</h2><p style="margin:0.6em 0"><strong>To:** CFO
+**From:** Senior Data Integrity Auditor
+**Date:** October 26, 2023
+**Subject:** Revenue Reconciliation Discrepancies - Client Event Stream vs. Server-Side Ledger</strong></p><p style="margin:0.6em 0;line-height:1.7">This memo summarizes the findings of a revenue reconciliation audit conducted for the period of March 1-3, 2024, comparing revenue data from the client-side event stream with the server-side transaction ledger. The analysis revealed significant discrepancies, primarily due to *unattributed server transactions* and *unattributed failed transactions*. These require immediate investigation and remediation to ensure accurate financial reporting and revenue recognition.</p><p style="margin:0.6em 0"><strong>Key Findings:</strong></p><p style="margin:0.6em 0;line-height:1.7">The three-day period shows a total revenue discrepancy (**revenue_delta**) of \$71,698.73 with server-side revenue exceeding client-declared revenue. Drilling down, we found no date where the client-declared revenue exceeds server revenue, meaning revenue may be systematically undercounted by the client event stream. This warrants immediate attention.</p><p style="margin:0.6em 0"><strong>Specifically:</strong></p><p style="margin:0.6em 0"><strong>   **Unattributed Server Transactions:** A substantial portion of the discrepancy arises from 'unattributed_server_tx' – server-side transactions completing successfully without a corresponding client-side purchase intent event. This *attribution gap* accounts for \$14,017.42 on March 1st, \$24,479.34 on March 2nd, and \$18,272.23 on March 3rd, totaling \$56,768.99. The root cause is likely a failure in the client event stream to reliably capture purchase intent events. This can be caused by network errors, client-side crashes, or code defects in the event tracking logic.</strong></p><p style="margin:0.6em 0"><strong>   **Failed Unattributed Transactions:** A small, but still significant, discrepancy is caused by "failed\_unattributed" transactions. The server records failed transactions without any corresponding client-side entry for purchase intent. This represents \$4,007.87 on March 1st, \$7,353.35 on March 2nd, and \$3,568.52 on March 3rd, totaling \$14,929.74. Since the transactions failed, these should *not* be recorded as revenue anywhere. These entries need to be investigated to determine why failed server-side transactions are being recorded as revenue.</strong></p><p style="margin:0.6em 0"><strong>   **Intent-But-Failed Transactions:** Finally, we've recorded transactions where the client fired a purchase intent, but the server transaction failed. There were no amount deltas here, meaning that these transactions were recorded consistently as \$0 revenue by both systems. As such, these transactions do not cause reconciliation problems, but they may provide valuable insight into ways to improve revenue capture by reducing transaction failure rates.</strong></p><p style="margin:0.6em 0"><strong>Recommendations:</strong></p><p style="margin:0.6em 0;line-height:1.7">1.  **Investigate Attribution Failures:** The largest discrepancy stems from unattributed server transactions. A thorough investigation is needed to identify the cause of the *attribution gap*. This should include a review of client-side event tracking code, network latency and reliability, and server-side transaction logging to pinpoint where and why these events are being missed. The team must create a plan to address this *systematic undercount* by the client.</p><p style="margin:0.6em 0;line-height:1.7">2.  **Audit Server-Side "Failed Transactions":** Audit the specific server-side logic that causes failed transactions to be recorded in a way that falsely impacts the reconciliation between the server and the client, resulting in a revenue delta.</p><p style="margin:0.6em 0;line-height:1.7">3.  **Refine Reconciliation Logic:** Review the current reconciliation methodology to ensure it accurately accounts for the different transaction statuses and appropriately handles failed transactions.</p><p style="margin:0.6em 0;line-height:1.7">4.  **Implement Monitoring & Alerting:** Implement real-time monitoring and alerting for revenue discrepancies to enable faster detection and resolution of similar issues in the future. Daily revenue reports will be generated by my team for the next two weeks and reviewed with the Data Engineering team.</p><p style="margin:0.6em 0;line-height:1.7">5.  **Review 'Intent But Failed' transactions**. Work with the engineering team to reduce the transaction failure rate that these transactions represent. While reconciliation is unaffected by these, the team may be able to optimize this area of transaction handling to capture more revenue.</p><p style="margin:0.6em 0"><strong>Next Steps:</strong></p><p style="margin:0.6em 0;line-height:1.7">I recommend an immediate meeting with the Engineering and Finance departments to discuss these findings and initiate the recommended actions. Addressing these data integrity issues will ensure accurate revenue reporting and informed decision-making.</p></div>
+  </div>
+
+</div>
+</body>
+</html>

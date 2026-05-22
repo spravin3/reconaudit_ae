@@ -1,0 +1,31 @@
+version: 2
+
+seeds:
+  - name: dim_event_types
+    description: >
+      Static lookup table for the 3 client event types.
+      Maps each event_name to a funnel stage and order for journey analysis.
+    columns:
+      - name: event_name
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['page_view', 'add_to_cart', 'purchase_intent']
+      - name: funnel_order
+        tests:
+          - not_null
+
+  - name: dim_traffic_sources
+    description: >
+      Static lookup table for the 10 traffic acquisition channels.
+      Classifies each source by channel type and paid/organic flag.
+    columns:
+      - name: traffic_source
+        tests:
+          - unique
+          - not_null
+      - name: channel_type
+        tests:
+          - not_null

@@ -1,0 +1,26 @@
+[project]
+name = "reconaudit-ae"
+version = "0.1.0"
+description = "Reconciliation & Audit Engine — Principal Analytics Engineer Assessment"
+requires-python = ">=3.11"
+dependencies = [
+    "dlt[duckdb]>=1.4.0",
+    "dbt-duckdb>=1.9.0",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
